@@ -27,17 +27,17 @@ class MyHandler(BaseHTTPRequestHandler):
             try:
                 if len(clz)>0 and clz[-1].startswith("<"):
                     realclz = clz[:-1]
-                    maxsize = clz[-1][1:]
+                    maxsize = int(clz[-1][1:])
                     subtree = java_exports.filter_smallsize(java_exports.lookup(realclz, MyHandler.tree),maxsize)
                 else:
                     realclz = clz
                     subtree = java_exports.lookup(realclz, MyHandler.tree)
-                    if collectsize:
-                        if collectsize[-1]=='%':
-                            smallsize = int(subtree['size'] * float(collectsize[:-1])/100)
-                        else:
-                            smallsize = int(collectsize)
-                        subtree = java_exports.collect_smallsize(subtree,smallsize)
+                if collectsize:
+                    if collectsize[-1]=='%':
+                        smallsize = int(subtree['size'] * float(collectsize[:-1])/100)
+                    else:
+                        smallsize = int(collectsize)
+                    subtree = java_exports.collect_smallsize(subtree,smallsize)
                 self.send_response(200)
                 self.send_header('Content-type',content_type)
                 self.send_header('Access-Control-Allow-Origin','*')

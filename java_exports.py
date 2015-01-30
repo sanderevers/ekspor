@@ -24,7 +24,7 @@ def classes_from_file(text):
 # a TREE consists of:
 # - a set of BRANCHES (which are trees themselves) named by tuples of strings
 #   whose (tuple) prefixes do not overlap
-# - a LEAF (optional if there are branches): empty tuple
+# - a LEAF (optional if there are branches) under the empty tuple
 # - a dict string -> arbitrary value
 
 def branches(t):
@@ -92,8 +92,8 @@ def collect_smallsize(t, minsize):
     for k,v in branches(t).iteritems():
         branchsize = anns(v)['size']
         if branchsize < minsize:
-            newbr[branchname]=newbr.get(branchname,tree({},anns={'size':0}))
-            newbr[branchname]['size'] += branchsize
+            newbr[branchname]=newbr.get(branchname,tree({},leaf=[],anns={'$size':0}))
+            newbr[branchname]['$size'] += branchsize
         else:
             newbr[k] = collect_smallsize(v,minsize)
     return tree(newbr,leaf(t),anns(t))
@@ -201,7 +201,7 @@ def _to_treemap(tree,stack):
         if type(k) is str:
             pass
         elif k==():
-            branches.append({'name':'$', 'size':tree['$size']})
+            branches.append({'name':'$', 'size':tree['$size'], 'path':'.'.join(stack)+'$', 'exports':v})
         else:
             children = _to_treemap(v,stack+k)
             branches.append({'name':'.'.join(k), 'path':'.'.join(stack+k), 'children': children})
