@@ -3,11 +3,15 @@
 import subprocess
 import json
 
+EXPORTS_DIR = '/Users/sandr/work/cobra'
+IMPORTS_DIR = '/Users/sandr/work/eduarte'
+SRC_REGEX = '.*/src/main/java/.*\.java$'
 
-def fetch_filenames():
-    SRC_DIR = '/Users/sandr/work/eduarte'
-    SRC_REGEX = '.*/src/main/java/.*\.java$'
-    return subprocess.check_output(['find',SRC_DIR,'-regex',SRC_REGEX]).splitlines()
+def fetch_export_filenames():
+    return subprocess.check_output(['find',EXPORTS_DIR,'-regex',SRC_REGEX]).splitlines()
+
+def fetch_import_filenames():
+    return subprocess.check_output(['find',IMPORTS_DIR,'-regex',SRC_REGEX]).splitlines()
 
 def class_from_filename(filename):
     with_slashes = filename.split('/src/main/java/')[-1]
@@ -201,23 +205,30 @@ def _to_treemap(tree,stack):
         if type(k) is str:
             pass
         elif k==():
-            branches.append({'name':'$', 'size':tree['$size'], 'path':'.'.join(stack)+'$', 'exports':v})
+            branches.append({'name':'$', 'size':tree['$size'], 'path':'.'.join(stack)+'$', 'exports':list(v)})
         else:
             children = _to_treemap(v,stack+k)
             branches.append({'name':'.'.join(k), 'path':'.'.join(stack+k), 'children': children})
     return branches
 
 def read_flat():
-    filenames = fetch_filenames()
+    import_filenames = fetch_import_filenames()
     imports = {}
-    exports = {}
-    for filename in filenames:
+    for filename in import_filenames:
         with open(filename) as f:
             clazz = class_from_filename(filename)
             if clazz in imports:
-                print 'WARNING: duplicate class '+clazz
+                print 'WARNING: duplicate class in imports: '+clazz
             imports[clazz] = classes_from_file(f.read())
-            exports[clazz] = set()
+
+    export_filenames = fetch_export_filenames()
+    exports = {}
+    for filename in export_filenames:
+        clazz = class_from_filename(filename)
+        if clazz in exports:
+            print 'WARNING: duplicate class in exports: '+clazz
+        exports[clazz] = set()
+
     for clazz, imp_classes in imports.items():
         for imp_class in imp_classes:
             try:
