@@ -24,31 +24,38 @@ class MyHandler(BaseHTTPRequestHandler):
             content_type = 'text/html' if view=='html' else 'application/json'
             print('clz={clz}'.format(clz=clz))
             print('query={query}'.format(query=query))
-            try:
-                if len(clz)>0 and clz[-1].startswith("<"):
-                    realclz = clz[:-1]
-                    maxsize = int(clz[-1][1:])
-                    subtree = java_exports.filter_smallsize(java_exports.lookup(realclz, MyHandler.tree),maxsize)
+#            try:
+            if len(clz)>0 and clz[-1].startswith("<"):
+                realclz = clz[:-1]
+                maxsize = int(clz[-1][1:])
+                subtree = java_exports.filter_smallsize(java_exports.lookup(realclz, MyHandler.tree),maxsize)
+            else:
+                realclz = clz
+                subtree = java_exports.lookup(realclz, MyHandler.tree)
+            if collectsize:
+                if collectsize[-1]=='%':
+                    smallsize = int(subtree['size'] * float(collectsize[:-1])/100)
                 else:
-                    realclz = clz
-                    subtree = java_exports.lookup(realclz, MyHandler.tree)
-                if collectsize:
-                    if collectsize[-1]=='%':
-                        smallsize = int(subtree['size'] * float(collectsize[:-1])/100)
-                    else:
-                        smallsize = int(collectsize)
-                    subtree = java_exports.collect_smallsize(subtree,smallsize)
-                self.send_response(200)
-                self.send_header('Content-type',content_type)
-                self.send_header('Access-Control-Allow-Origin','*')
-                self.end_headers()
+                    smallsize = int(collectsize)
+                subtree = java_exports.collect_smallsize(subtree,smallsize)
+            exports = java_exports.get_leaf_exports(subtree)
+            exports_dummydict = {}
+            for e in exports:
+                exports_dummydict[tuple(e.split('.'))]=['']
+            exports_tree = java_exports.ann_size(java_exports.treeify_simple(exports_dummydict))
+            self.send_response(200)
+            self.send_header('Content-type',content_type)
+            self.send_header('Access-Control-Allow-Origin','*')
+            self.end_headers()
 
-                if content_type=='application/json':
-                    self.wfile.write(json.dumps(java_exports.to_treemap(subtree,realclz),indent=2))
-                else:
-                    self.wfile.write(MyHandler.tree_to_html(realclz,subtree))
-            except KeyError:
-                self.send_error(404)
+            if content_type=='application/json':
+                treemap = java_exports.to_treemap(subtree,realclz)
+                treemap['exports_tree'] = java_exports.to_treemap(exports_tree)
+                self.wfile.write(json.dumps(treemap,indent=2))
+            else:
+                self.wfile.write(MyHandler.tree_to_html(realclz,subtree))
+#            except KeyError:
+#                self.send_error(404)
             print('  {:.0f} ms'.format((time.time()-starttime)*1000))
 
             return

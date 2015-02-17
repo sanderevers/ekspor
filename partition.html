@@ -31,7 +31,7 @@ text {
 </style>
 <body>
     <h2></h2>
-    <svg></svg>
+    <svg class="exporting"></svg>&nbsp;&nbsp;&nbsp;<svg class="importing"></svg>
     <p>
     #imports: <span class="size"></span>
 </p>
@@ -42,7 +42,7 @@ text {
 <script>
 
 var margin = {top: 40, right: 10, bottom: 10, left: 10},
-    width = 1200 - margin.left - margin.right,
+    width = 800 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
 
 var color = d3.scale.category20c();
@@ -51,7 +51,18 @@ var treemap = d3.layout.partition()
     .size([height,width])
     .value(function(d) { return d.size; });
 
-var svg = d3.select("svg")
+var treemap2 = d3.layout.partition()
+    .size([height,width])
+    .value(function(d) { return d.size; });
+
+var svge = d3.selectAll("svg.exporting")
+    .style("position", "relative")
+    .attr("width", (width + margin.left + margin.right) + "px")
+    .attr("height", (height + margin.top + margin.bottom) + "px")
+    .append("g")
+        .attr("transform", "translate("+margin.left+","+ margin.top + ")");
+
+var svgi = d3.selectAll("svg.importing")
     .style("position", "relative")
     .attr("width", (width + margin.left + margin.right) + "px")
     .attr("height", (height + margin.top + margin.bottom) + "px")
@@ -85,15 +96,46 @@ function load(path) {
         p.append("text").text(")");
 
 
-        var nodedata = treemap.nodes(root);
-        var node = svg.selectAll(".node")
-            .data(nodedata, function(d) {return d.path;})
+        var data_exporting = treemap.nodes(root);
+        var data_importing = treemap2.nodes(root.exports_tree);
+        var enode = svge.selectAll(".node")
+            .data(data_exporting, function(d) {return "E-"+d.path;});
+        var inode = svgi.selectAll(".importing .node")
+            .data(data_importing, function(d) {return "I-"+d.path;});
 
-        node.transition()
+        enode.transition()
             .duration(750)
             .call(position);
 
-        var n = node.enter().append("svg");
+        var en = enode.enter().append("svg");
+        en
+            .on("click",function(d) {
+                  load(d.path);
+                })
+            .on("mouseover",function(d) {d3.select(".size").text(d.value);})
+            .attr("class", "node")
+            .attr("x",width)
+            .attr("y",0)
+            .attr("height",0)
+            .attr("width",0)
+            .append("rect")
+                .attr("height","100%")
+                .attr("width","100%")
+                .attr("fill",function(d) { return color(d.path); });
+        en.append("text");
+        en.transition().duration(750).call(position);
+
+        enode
+            .select("text")
+                .text(function(d) { return d.name; });
+
+        enode.exit().remove();
+
+        inode.transition()
+            .duration(750)
+            .call(position);
+
+        var n = inode.enter().append("svg");
         n
             .on("click",function(d) {
                   load(d.path);
@@ -111,21 +153,12 @@ function load(path) {
         n.append("text");
         n.transition().duration(750).call(position);
 
-        node
+        inode
             .select("text")
                 .text(function(d) { return d.name; });
 
-
-/*        node.style("background-color", function(d) { return color(d.path); })
-            .on("click",function(d) {
-                if (d.name==='^')
-                    window.location="http://localhost:8888/"+d.path+"?view=html";
-                else
-                  load(d.path);
-              }) */
-
-
-        node.exit().remove();
+        inode.exit().remove();
+    
     });
 }
 

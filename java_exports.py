@@ -4,14 +4,17 @@ import subprocess
 import json
 
 EXPORTS_DIR = '/Users/sandr/work/cobra'
-IMPORTS_DIR = '/Users/sandr/work/eduarte'
+IMPORTS_DIRS = ['/Users/sandr/work/eduarte','/Users/sandr/work/digdag']
 SRC_REGEX = '.*/src/main/java/.*\.java$'
 
 def fetch_export_filenames():
     return subprocess.check_output(['find',EXPORTS_DIR,'-regex',SRC_REGEX]).splitlines()
 
 def fetch_import_filenames():
-    return subprocess.check_output(['find',IMPORTS_DIR,'-regex',SRC_REGEX]).splitlines()
+    filenames = []
+    for dir in IMPORTS_DIRS:
+        filenames.extend(subprocess.check_output(['find',dir,'-regex',SRC_REGEX]).splitlines())
+    return filenames
 
 def class_from_filename(filename):
     with_slashes = filename.split('/src/main/java/')[-1]
@@ -176,7 +179,13 @@ def lookup(path, t):
             return lookup(path[i:],br[path[:i]])
     raise KeyError()
 
-
+def get_leaf_exports(t):
+    exports = set()
+    if hasleaf(t):
+        exports.update(leaf(t))
+    for v in branches(t).itervalues():
+        exports.update(get_leaf_exports(v))
+    return exports
 
 def common_prefix(*strings):
     prefix = strings[0]
