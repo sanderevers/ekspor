@@ -18,31 +18,49 @@ class MyHandler(BaseHTTPRequestHandler):
             starttime = time.time()
             urlparts = urlparse.urlparse(self.path)
             clz = tuple(c for c in urllib.unquote(urlparts.path).replace('/','.').split('.') if c)
+            if clz==('favicon','ico'):
+                raise IOError
+
             query = urlparse.parse_qs(urllib.unquote(urlparts.query))
             view = query.get('view',[None])[0]
-            collectsize = query.get('collectsize',[None])[0]
             content_type = 'text/html' if view=='html' else 'application/json'
+            collectsize = query.get('collectsize',[None])[0]
+            to = query.get('to',[None])[0]
             print('clz={clz}'.format(clz=clz))
             print('query={query}'.format(query=query))
+
+            if to is None:
+                wholetree = MyHandler.tree
+            else:
+                filtered = {}
+                for k,v in MyHandler.exports_tup.iteritems():
+                    fv = set((clz for clz in v if clz.startswith(to)))
+                    if fv:
+                        filtered[k]=fv
+                wholetree = java_exports.construct_annotated_tree(filtered)
+
 #            try:
             if len(clz)>0 and clz[-1].startswith("<"):
                 realclz = clz[:-1]
                 maxsize = int(clz[-1][1:])
-                subtree = java_exports.filter_smallsize(java_exports.lookup(realclz, MyHandler.tree),maxsize)
+                realclz, subtree = java_exports.lookup(realclz, wholetree)
+                subtree = java_exports.filter_smallsize(subtree,maxsize)
             else:
-                realclz = clz
-                subtree = java_exports.lookup(realclz, MyHandler.tree)
+                realclz, subtree = java_exports.lookup(clz, wholetree)
+
+            exports = java_exports.get_leaf_exports(subtree)
+            exports_dummydict = {}
+            for e in exports:
+                exports_dummydict[tuple(e.split('.'))]=['']
+            exports_tree = java_exports.construct_annotated_tree(exports_dummydict)
+
             if collectsize:
                 if collectsize[-1]=='%':
                     smallsize = int(subtree['size'] * float(collectsize[:-1])/100)
                 else:
                     smallsize = int(collectsize)
                 subtree = java_exports.collect_smallsize(subtree,smallsize)
-            exports = java_exports.get_leaf_exports(subtree)
-            exports_dummydict = {}
-            for e in exports:
-                exports_dummydict[tuple(e.split('.'))]=['']
-            exports_tree = java_exports.ann_size(java_exports.treeify_simple(exports_dummydict))
+                exports_tree = java_exports.collect_smallsize(exports_tree,smallsize)
             self.send_response(200)
             self.send_header('Content-type',content_type)
             self.send_header('Access-Control-Allow-Origin','*')
@@ -91,7 +109,8 @@ class MyHandler(BaseHTTPRequestHandler):
 
 def main():
     try:
-        MyHandler.tree = java_exports.construct_annotated_tree()
+        MyHandler.exports_tup = java_exports.read_flat()
+        MyHandler.tree = java_exports.construct_annotated_tree(MyHandler.exports_tup)
         server = HTTPServer(('', PORT), MyHandler)
         print 'serving HTTP on port {port}...'.format(port=PORT)
         server.serve_forever()

@@ -30,19 +30,24 @@ text {
 
 </style>
 <body>
-    <h2></h2>
-    <svg class="exporting"></svg>&nbsp;&nbsp;&nbsp;<svg class="importing"></svg>
-    <p>
-    #imports: <span class="size"></span>
-</p>
-    <ul>
-    </ul>
+    <div class="left" style="float:left; width:50%;">
+        <h2></h2>
+        <svg class="exporting"></svg>
+        <p>#imports: <span class="size"></span></p>
+        <ul>
+        </ul>
+    </div>
+    <div class="right" style="float:right; width:50%;">
+        <h2></h2>
+        <svg class="importing"></svg>
+    </div>
+
 
 <script src="d3.min.js"></script>
 <script>
 
-var margin = {top: 40, right: 10, bottom: 10, left: 10},
-    width = 800 - margin.left - margin.right,
+var margin = {top: 40, right: 10, bottom: 20, left: 10},
+    width = 700 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
 
 var color = d3.scale.category20c();
@@ -69,32 +74,27 @@ var svgi = d3.selectAll("svg.importing")
     .append("g")
         .attr("transform", "translate("+margin.left+","+ margin.top + ")");
 
+var export_root;
+
 load("");
 
-function load(path) {
+
+function load(path, topath) {
     console.log(path);
-    d3.json(path_to_url(path), function(error, root) {
+    d3.json(path_to_url(path, topath), function(error, root) {
+        export_root = root;
         d3.selectAll("h2 *").remove();
-        p = d3.select("h2");
-        var pathparts = path.split(".");
-        for (var i=0; i<pathparts.length; i++) {
-            if (pathparts[i][0]==="<") {
-                p.append("text").text(" "+pathparts[i])
-            } else {
-                if (i>0) p.append("text").text(".");
-                p.append("a")
-                    .on("click",function(j) {return function() {load(pathparts.slice(0,j+1).join("."));}} (i))
-                    .attr("href","#")
-                    //.attr("href",path_to_url(pathparts.slice(0,i+1).join(".")))
-                    .text(pathparts[i]);
-            }
-        }
+        var p = d3.select(".left h2");
+        p.call(makelinks, root.path);
         p.append("text").text(" (");
         p.append("a").text("html").attr("href",path_to_url_html(path));
         p.append("text").text(" | ");
         p.append("a").text("json").attr("href",path_to_url_json(path));
         p.append("text").text(")");
 
+        p = d3.select(".right h2");
+        p.append("text").text("to: ");
+        p.call(makelinks, topath);
 
         var data_exporting = treemap.nodes(root);
         var data_importing = treemap2.nodes(root.exports_tree);
@@ -122,12 +122,9 @@ function load(path) {
                 .attr("height","100%")
                 .attr("width","100%")
                 .attr("fill",function(d) { return color(d.path); });
-        en.append("text");
         en.transition().duration(750).call(position);
 
-        enode
-            .select("text")
-                .text(function(d) { return d.name; });
+        enode.call(text);
 
         enode.exit().remove();
 
@@ -138,7 +135,7 @@ function load(path) {
         var n = inode.enter().append("svg");
         n
             .on("click",function(d) {
-                  load(d.path);
+                  load(export_root.path, d.path);
                 })
             .on("mouseover",function(d) {d3.select(".size").text(d.value);})
             .attr("class", "node")
@@ -150,34 +147,64 @@ function load(path) {
                 .attr("height","100%")
                 .attr("width","100%")
                 .attr("fill",function(d) { return color(d.path); });
-        n.append("text");
         n.transition().duration(750).call(position);
 
-        inode
-            .select("text")
-                .text(function(d) { return d.name; });
+        inode.call(text);
 
         inode.exit().remove();
-    
+
     });
 }
 
-function position_div() {
-  this.style("left", function(d) { return d.y + "px"; })
-      .style("top", function(d) { return d.x + "px"; })
-      .style("width", function(d) { return Math.max(0, d.dy - 1) + "px"; })
-      .style("height", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+function text() {
+/*    this.select("text").html(function(d) {
+        if (d.name==="^")
+            return d.path.split(".").join("<br>");
+        else
+            return d.name;
+    }); */
+    this.each(function(d) {
+        var node = d3.select(this);
+        node.selectAll("text").remove();
+        if (d.name==='^') {
+            var pathparts = d.path.split(".");
+            for (var i=0; i<pathparts.length; i++) {
+                node.append("text").text(pathparts[i]).attr("y", i*30);
+            }
+        } else {
+            node.append("text").text(d.name);
+        }
+    });
 }
 
 function position() {
     this.attr("x", function(d) { return d.y; })
         .attr("y", function(d) { return d.x; })
-        .attr("width", function(d) { return Math.max(0, d.dy - 1); })
-        .attr("height", function(d) { return Math.max(0, d.dx - 1); });
+        .attr("width", function(d) { return Math.max(0, d.dx < 20 ? d.dy - 20 : d.dy - 1); })
+        .attr("height", function(d) { return Math.max(20, d.dx - 1); });
 }
 
-function path_to_url(path) {
-    return "http://localhost:8888/"+path+"?collectsize=5%";
+function makelinks(p, path) {
+    if (!path)
+        return;
+
+    var pathparts = path.split(".");
+    for (var i=0; i<pathparts.length; i++) {
+        if (pathparts[i][0]==="<") {
+            p.append("text").text(" "+pathparts[i])
+        } else {
+            if (i>0) p.append("text").text(".");
+            p.append("a")
+                .on("click",function(j) {return function() {load(pathparts.slice(0,j+1).join("."));}} (i))
+                .attr("href","#")
+                //.attr("href",path_to_url(pathparts.slice(0,i+1).join(".")))
+                .text(pathparts[i]);
+        }
+    }
+}
+
+function path_to_url(path, topath) {
+    return "http://localhost:8888/"+path+"?collectsize=5%"+(topath ? "&to="+topath : "");
 }
 function path_to_url_html(path) {
     return "http://localhost:8888/"+path+"?view=html";

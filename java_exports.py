@@ -120,6 +120,28 @@ def collapse_minsize(tree, minsize):
     return ctree
 
 def concat_paths(t):
+    k,v = _concat_paths(t)
+    if k==():
+        return v
+    else:
+        return tree({k:v}, leaf(t), anns(t))
+
+def _concat_paths(t):
+    br = branches(t)
+    if len(br)==1 and not hasleaf(t):
+        myk = br.keys()[0]
+        brk, brv = _concat_paths(br.values()[0])
+        return myk+brk, brv
+    else:
+        updated_branches = {}
+        for k,v in br.iteritems():
+            brk,brv = _concat_paths(v)
+            updated_branches[k+brk] = brv
+        return (),tree(updated_branches, leaf(t), anns(t))
+
+# maakt paden van max 2 lang...
+'''
+def concat_paths(t):
     def update_branch(k,v):
         branches_v = branches(v)
         if len(branches_v)==1 and not(hasleaf(v)):
@@ -130,7 +152,7 @@ def concat_paths(t):
             return k,concat_paths(v)
     updated_branches = dict(update_branch(k,v) for (k,v) in branches(t).iteritems())
     return tree(updated_branches, leaf(t), anns(t))
-
+'''
 '''
 def aggregate_paths(t):
     br = branches(t)
@@ -172,11 +194,16 @@ def aggregate_paths(tree):
 
 def lookup(path, t):
     if len(path)==0:
-        return t
+        return path,t
     br = branches(t)
-    for i in range(1,len(path)+1):
-        if path[:i] in br:
-            return lookup(path[i:],br[path[:i]])
+    for k,v in br.iteritems():
+        if k[:1]==path[:1]:
+            pathend = path[len(k):]
+            pathend,subtree = lookup(pathend, v)
+            return k+pathend,subtree
+#    for i in range(1,len(path)+1):
+#        if path[:i] in br:
+#            return lookup(path[i:],br[path[:i]])
     raise KeyError()
 
 def get_leaf_exports(t):
@@ -203,22 +230,24 @@ def iter_prefix(s1,s2):
             return
 
 def to_treemap(tree,rootpath=()):
-    if len(branches(tree))==1:
-        return _to_treemap(tree,rootpath)[0]
-    else:
+#    if len(branches(tree))==1:
+#        return _to_treemap(tree,rootpath)[0]
+#    else:
         return {'name':'^', 'path':'.'.join(rootpath), 'children':_to_treemap(tree,rootpath)}
 
 def _to_treemap(tree,stack):
-    branches = []
+    children = []
     for k,v in tree.iteritems():
         if type(k) is str:
             pass
         elif k==():
-            branches.append({'name':'$', 'size':tree['$size'], 'path':'.'.join(stack)+'$', 'exports':list(v)})
+            children.append({'name':'$', 'size':tree['$size'], 'path':'.'.join(stack)+'$', 'exports':list(v)})
+        elif len(branches(v))==0:
+            children.append({'name':'.'.join(k), 'size':anns(v)['$size'], 'path':'.'.join(stack+k), 'exports':list(leaf(v))})
         else:
-            children = _to_treemap(v,stack+k)
-            branches.append({'name':'.'.join(k), 'path':'.'.join(stack+k), 'children': children})
-    return branches
+            vchildren = _to_treemap(v,stack+k)
+            children.append({'name':'.'.join(k), 'path':'.'.join(stack+k), 'children': vchildren})
+    return children
 
 def read_flat():
     import_filenames = fetch_import_filenames()
@@ -251,8 +280,7 @@ def read_flat():
 
     return exports_tup
 
-def construct_annotated_tree():
-    exports_tup = read_flat()
+def construct_annotated_tree(exports_tup):
     tree = treeify_simple(exports_tup)
     ctree = concat_paths(tree)
     atree = ann_size(ctree)
@@ -260,7 +288,8 @@ def construct_annotated_tree():
 
 
 def main():
-    atree = construct_annotated_tree()
+    exports_tup = read_flat()
+    atree = construct_annotated_tree(exports_tup)
     ctree = collapse_minsize(atree,atree['size']/40)
     treemap = to_treemap(ctree)
 
