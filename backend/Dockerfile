@@ -4,17 +4,9 @@ MAINTAINER Sander Evers <sander.evers@topicus.nl>
 RUN apt-get -q update
 RUN apt-get -qy install git python
 
-# copy ssh key
+# init ssh
 RUN mkdir -p /root/.ssh
-ADD id_ekspor /root/.ssh/id_rsa
 ADD known_hosts /root/.ssh/known_hosts
-
-# get git repos
-RUN eval "$(ssh-agent -s)" && \
-    ssh-add /root/.ssh/id_rsa && \
-    git clone git@github.com:topicusonderwijs/cobra.git && \
-    git clone git@github.com:topicusonderwijs/eduarte.git && \
-    git clone git@github.com:topicusonderwijs/digdag.git
 
 # Copy python files
 ADD java_exports.py /java_exports.py
@@ -28,5 +20,5 @@ EXPOSE 8888
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Start script
+# docker run --name ekspor_backend -e GIT_SSH_KEY="$(cat id_ekspor)" sandr/ekspor
 ENTRYPOINT /start.sh
