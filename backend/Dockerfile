@@ -6,7 +6,7 @@ RUN apt-get -qy install git python
 
 # init ssh
 RUN mkdir -p /root/.ssh
-ADD known_hosts /root/.ssh/known_hosts
+ADD ssh_config /root/.ssh/config
 
 # Copy python files
 ADD java_exports.py /java_exports.py
