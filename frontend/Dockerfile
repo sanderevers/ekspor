@@ -11,5 +11,5 @@ RUN chmod +x /start.sh
 ADD d3.min.js /usr/share/nginx/html/d3.min.js
 ADD index.html /usr/share/nginx/html/index.html
 
-# docker run --rm -P --link ekspor_backend:backend sandr/frontend
+# docker run --rm -P --link ekspor_backend:backend --name ekspor_frontend sandr/frontend
 # ENTRYPOINT /start.sh
