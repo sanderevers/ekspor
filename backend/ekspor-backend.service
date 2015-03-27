@@ -1,0 +1,22 @@
+[Unit]
+Description=ekspor-backend
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=0
+
+ExecStartPre=-/bin/bash -c "/usr/bin/docker login \
+    -e=\".\" -u=\"topicusonderwijs+fleet\" -p=\"$(etcdctl get /credentials/quay)\" quay.io && \
+    /usr/bin/docker pull quay.io/topicusonderwijs/ekspor-backend:latest"
+
+ExecStartPre=-/usr/bin/docker rm "ekspor-backend-0"
+ExecStart=/usr/bin/docker run --name "ekspor-backend-0" \
+    -e GITHUB_OAUTH="$(etcdctl get /credentials/github_oauth)"
+    quay.io/topicusonderwijs/ekspor-backend:latest
+
+ExecStop=/usr/bin/docker stop "ekspor-backend-0"
+Restart=always
+RestartSec=60
+
+[X-Fleet]
+MachineMetaData=name=coreos6
