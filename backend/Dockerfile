@@ -20,6 +20,6 @@ EXPOSE 8888
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
 
-# docker run --name ekspor_backend -e GITHUB_SSH_KEY="$(cat id_ekspor)" sandr/backend
-# docker run --name ekspor_backend -e GITHUB_OAUTH="$(cat github_oauth)" sandr/backend
+# docker run --name ekspor_backend -e GITHUB_SSH_KEY="$(cat id_ekspor)" quay.io/topicusonderwijs/ekspor-backend
+# docker run --name ekspor_backend -e GITHUB_OAUTH="$(cat github_oauth)" quay.io/topicusonderwijs/ekspor-backend
 ENTRYPOINT /start.sh

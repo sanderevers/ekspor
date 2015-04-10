@@ -4,7 +4,7 @@ import subprocess
 import json
 
 EXPORTS_DIR = '/repos/cobra'
-IMPORTS_DIRS = ['/repos/eduarte','/repos/digdag']
+IMPORTS_DIRS = ['/repos/eduarte','/repos/digdag','repos/iridium']
 SRC_REGEX = '.*/src/main/java/.*\.java$'
 
 def fetch_export_filenames():
