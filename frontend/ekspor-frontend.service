@@ -14,6 +14,7 @@ ExecStartPre=-/bin/bash -c "/usr/bin/docker login \
 ExecStartPre=-/usr/bin/docker rm "ekspor-frontend-0"
 ExecStart=/usr/bin/docker run --name "ekspor-frontend-0" \
     -p 5700:80 \
+    -m=\"100m\" \
     --link ekspor-backend-0:backend \
     quay.io/topicusonderwijs/ekspor-frontend:latest
 

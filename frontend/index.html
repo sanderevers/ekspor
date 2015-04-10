@@ -204,13 +204,13 @@ function makelinks(p, path) {
 }
 
 function path_to_url(path, topath) {
-    return "/backend/"+path+"?collectsize=5%"+(topath ? "&to="+topath : "");
+    return "./backend/"+path+"?collectsize=5%"+(topath ? "&to="+topath : "");
 }
 function path_to_url_html(path) {
-    return "/backend/"+path+"?view=html";
+    return "./backend/"+path+"?view=html";
 }
 function path_to_url_json(path) {
-    return "/backend/"+path;
+    return "./backend/"+path;
 }
 
 
