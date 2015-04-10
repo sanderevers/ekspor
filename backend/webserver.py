@@ -7,9 +7,10 @@ import urllib
 import urlparse
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-HOST = 'localhost'
-PORT = 8888
-BASE_URL = 'http://{host}:{port}'.format(host=HOST,port=PORT)
+HOST = 'kibana.topicusonderwijs.nl'
+PORT = 443
+BASEDIR = '/ekspor/backend'
+BASE_URL = 'https://{host}:{port}{basedir}'.format(host=HOST,port=PORT,basedir=BASEDIR)
 
 class MyHandler(BaseHTTPRequestHandler):
 

@@ -31,15 +31,20 @@ text {
 </style>
 <body>
     <div class="left" style="float:left; width:50%;">
+        imports of
         <h2></h2>
         <svg class="exporting"></svg>
-        <p>#imports: <span class="size"></span></p>
+        <p><small>(size represents number of import statements)</small></p>
+        <p>#import statements: <span class="size"></span></p>
+        <p class="backendlinks"></p>
         <ul>
         </ul>
     </div>
     <div class="right" style="float:right; width:50%;">
+        by
         <h2></h2>
         <svg class="importing"></svg>
+        <p><small>(size represents number of files)</small></p>
     </div>
 
 
@@ -86,14 +91,13 @@ function load(path, topath) {
         d3.selectAll("h2 *").remove();
         var p = d3.select(".left h2");
         p.call(makelinks, root.path);
-        p.append("text").text(" (");
-        p.append("a").text("html").attr("href",path_to_url_html(path));
-        p.append("text").text(" | ");
-        p.append("a").text("json").attr("href",path_to_url_json(path));
-        p.append("text").text(")");
+        d3.selectAll(".backendlinks *").remove();
+        var b = d3.select(".backendlinks")
+        b.append("a").text("html").attr("href",path_to_url_html(path));
+        b.append("text").text(" | ");
+        b.append("a").text("json").attr("href",path_to_url_json(path));
 
         p = d3.select(".right h2");
-        p.append("text").text("to: ");
         p.call(makelinks, topath);
 
         var data_exporting = treemap.nodes(root);
