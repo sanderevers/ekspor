@@ -8,9 +8,10 @@ import urlparse
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 HOST = 'kibana.topicusonderwijs.nl'
-PORT = 443
+EXTERNAL_PORT = 443
+LOCAL_PORT = 8888
 BASEDIR = '/ekspor/backend'
-BASE_URL = 'https://{host}:{port}{basedir}'.format(host=HOST,port=PORT,basedir=BASEDIR)
+BASE_URL = 'https://{host}:{port}{basedir}'.format(host=HOST,port=EXTERNAL_PORT,basedir=BASEDIR)
 
 class MyHandler(BaseHTTPRequestHandler):
 
@@ -112,8 +113,8 @@ def main():
     try:
         MyHandler.exports_tup = java_exports.read_flat()
         MyHandler.tree = java_exports.construct_annotated_tree(MyHandler.exports_tup)
-        server = HTTPServer(('', PORT), MyHandler)
-        print 'serving HTTP on port {port}...'.format(port=PORT)
+        server = HTTPServer(('', LOCAL_PORT), MyHandler)
+        print 'serving HTTP on port {port}...'.format(port=LOCAL_PORT)
         server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'
