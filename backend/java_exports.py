@@ -9,8 +9,11 @@ def fetch_export_filenames():
 
 def fetch_import_filenames():
     filenames = []
-    for dir in config.IMPORTS_DIRS:
-        filenames.extend(subprocess.check_output(['find',dir,'-regex',config.SRC_REGEX]).splitlines())
+    for imp in config.IMPORTS:
+        for filename in subprocess.check_output(['find',imp['path'],'-regex',config.SRC_REGEX]).splitlines():
+            localfile = filename[len(imp['path']):]
+            url = imp['url'] + localfile
+            filenames.append((filename,url))
     return filenames
 
 def class_from_filename(filename):
@@ -249,12 +252,14 @@ def _to_treemap(tree,stack):
 def read_flat():
     import_filenames = fetch_import_filenames()
     imports = {}
-    for filename in import_filenames:
+    urls = {}
+    for (filename,url) in import_filenames:
         with open(filename) as f:
             clazz = class_from_filename(filename)
             if clazz in imports:
                 print 'WARNING: duplicate class in imports: '+clazz
             imports[clazz] = classes_from_file(f.read())
+            urls[clazz] = url
 
     export_filenames = fetch_export_filenames()
     exports = {}
@@ -275,7 +280,7 @@ def read_flat():
     for name,ex in exports.iteritems():
         exports_tup[tuple(name.split('.'))] = ex
 
-    return exports_tup
+    return exports_tup, urls
 
 def construct_annotated_tree(exports_tup):
     tree = treeify_simple(exports_tup)
@@ -285,7 +290,7 @@ def construct_annotated_tree(exports_tup):
 
 
 def main():
-    exports_tup = read_flat()
+    exports_tup,urls = read_flat()
     atree = construct_annotated_tree(exports_tup)
     ctree = collapse_minsize(atree,atree['size']/40)
     treemap = to_treemap(ctree)

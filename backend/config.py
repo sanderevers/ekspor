@@ -10,5 +10,9 @@ BASE_URL = 'http://{host}:{port}{basedir}'.format(host=HOST,port=EXTERNAL_PORT,b
 
 # java_exports
 EXPORTS_DIR = '/Users/sandr/work/cobra'
-IMPORTS_DIRS = ['/Users/sandr/work/eduarte','/Users/sandr/work/digdag','/Users/sandr/work/iridium']
+IMPORTS = \
+    [ { 'path':'/Users/sandr/work/eduarte', 'url':'https://github.com/topicusonderwijs/eduarte/tree/master' }
+    , { 'path':'/Users/sandr/work/digdag',  'url':'https://github.com/topicusonderwijs/digdag/tree/master'  }
+    , { 'path':'/Users/sandr/work/iridium', 'url':'https://github.com/topicusonderwijs/iridium/tree/master' }
+    ]
 SRC_REGEX = '.*/src/main/java/.*\.java$'

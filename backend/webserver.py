@@ -82,7 +82,7 @@ class MyHandler(BaseHTTPRequestHandler):
     def tree_to_html(clz,tree):
         items = ['<li><a href="{docroot}/{clzpath}.{key}?view=html">{key}</a></li>'.format(docroot=config.BASE_URL,clzpath='.'.join(clz),key='.'.join(k))
                     for k in tree.keys() if type(k) is tuple]
-        exports = ['<li>{clz}</li>'.format(clz=clz) for clz in tree.get((),[])]
+        exports = ['<li><a href="{url}">{clz}</a></li>'.format(clz=clz,url=MyHandler.urls[clz]) for clz in tree.get((),[])]
         attrs = {k:v for k,v in tree.iteritems() if type(k) is str}
         return '''
         <html><body>
@@ -106,7 +106,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
 def main():
     try:
-        MyHandler.exports_tup = java_exports.read_flat()
+        MyHandler.exports_tup, MyHandler.urls = java_exports.read_flat()
         MyHandler.tree = java_exports.construct_annotated_tree(MyHandler.exports_tup)
         server = HTTPServer(('', config.LOCAL_PORT), MyHandler)
         print 'serving HTTP on port {port}...'.format(port=config.LOCAL_PORT)
