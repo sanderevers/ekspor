@@ -53,11 +53,14 @@ class MyHandler(BaseHTTPRequestHandler):
 
             if collectsize:
                 if collectsize[-1]=='%':
-                    smallsize = int(subtree['size'] * float(collectsize[:-1])/100)
+                    fraction = float(collectsize[:-1])/100
+                    smallsize = int(subtree['size'] * fraction)
+                    smallsize_to = int(exports_tree['size'] * fraction)
                 else:
                     smallsize = int(collectsize)
+                    smallsize_to = smallsize
                 subtree = java_exports.collect_smallsize(subtree,smallsize)
-                exports_tree = java_exports.collect_smallsize(exports_tree,smallsize)
+                exports_tree = java_exports.collect_smallsize(exports_tree,smallsize_to)
             self.send_response(200)
             self.send_header('Content-type',content_type)
             self.send_header('Access-Control-Allow-Origin','*')

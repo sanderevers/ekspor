@@ -35,7 +35,7 @@ text {
         <h2></h2>
         <svg class="exporting"></svg>
         <p><small>(size represents number of import statements)</small></p>
-        <p>#import statements: <span class="size"></span></p>
+        <p>#import statements: <span class="esize"></span></p>
         <p class="backendlinks"></p>
         <ul>
         </ul>
@@ -45,6 +45,7 @@ text {
         <h2></h2>
         <svg class="importing"></svg>
         <p><small>(size represents number of files)</small></p>
+        <p>#files: <span class="isize"></span></p>
     </div>
 
 
@@ -91,7 +92,7 @@ function load(path, topath) {
         export_root = root;
         d3.selectAll("h2 *").remove();
         var p = d3.select(".left h2");
-        p.call(makelinks, root.path);
+        p.call(makelinks, path);
         d3.selectAll(".backendlinks *").remove();
         var b = d3.select(".backendlinks")
         b.append("a").text("html").attr("href",path_to_url_html(path));
@@ -114,10 +115,7 @@ function load(path, topath) {
 
         var en = enode.enter().append("svg");
         en
-            .on("click",function(d) {
-                  load(d.path);
-                })
-            .on("mouseover",function(d) {d3.select(".size").text(d.value);})
+            .on("mouseover",function(d) {d3.select(".esize").text(d.value);})
             .attr("class", "node")
             .attr("x",width)
             .attr("y",0)
@@ -130,6 +128,10 @@ function load(path, topath) {
         en.transition().duration(750).call(position);
 
         enode.call(text);
+        enode.on("click",function(d) {
+                          load(d.path, topath);
+                        })
+
 
         enode.exit().remove();
 
@@ -142,7 +144,7 @@ function load(path, topath) {
             .on("click",function(d) {
                   load(export_root.path, d.path);
                 })
-            .on("mouseover",function(d) {d3.select(".size").text(d.value);})
+            .on("mouseover",function(d) {d3.select(".isize").text(d.value);})
             .attr("class", "node")
             .attr("x",width)
             .attr("y",0)
