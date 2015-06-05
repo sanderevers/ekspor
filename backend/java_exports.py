@@ -2,18 +2,15 @@
 
 import subprocess
 import json
-
-EXPORTS_DIR = '/repos/cobra'
-IMPORTS_DIRS = ['/repos/eduarte','/repos/digdag','repos/iridium']
-SRC_REGEX = '.*/src/main/java/.*\.java$'
+import config
 
 def fetch_export_filenames():
-    return subprocess.check_output(['find',EXPORTS_DIR,'-regex',SRC_REGEX]).splitlines()
+    return subprocess.check_output(['find',config.EXPORTS_DIR,'-regex',config.SRC_REGEX]).splitlines()
 
 def fetch_import_filenames():
     filenames = []
-    for dir in IMPORTS_DIRS:
-        filenames.extend(subprocess.check_output(['find',dir,'-regex',SRC_REGEX]).splitlines())
+    for dir in config.IMPORTS_DIRS:
+        filenames.extend(subprocess.check_output(['find',dir,'-regex',config.SRC_REGEX]).splitlines())
     return filenames
 
 def class_from_filename(filename):

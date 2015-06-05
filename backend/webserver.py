@@ -6,12 +6,7 @@ import time
 import urllib
 import urlparse
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-
-HOST = 'kibana.topicusonderwijs.nl'
-EXTERNAL_PORT = 443
-LOCAL_PORT = 8888
-BASEDIR = '/ekspor/backend'
-BASE_URL = 'https://{host}:{port}{basedir}'.format(host=HOST,port=EXTERNAL_PORT,basedir=BASEDIR)
+import config
 
 class MyHandler(BaseHTTPRequestHandler):
 
@@ -85,7 +80,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
     @staticmethod
     def tree_to_html(clz,tree):
-        items = ['<li><a href="{docroot}/{clzpath}.{key}?view=html">{key}</a></li>'.format(docroot=BASE_URL,clzpath='.'.join(clz),key='.'.join(k))
+        items = ['<li><a href="{docroot}/{clzpath}.{key}?view=html">{key}</a></li>'.format(docroot=config.BASE_URL,clzpath='.'.join(clz),key='.'.join(k))
                     for k in tree.keys() if type(k) is tuple]
         exports = ['<li>{clz}</li>'.format(clz=clz) for clz in tree.get((),[])]
         attrs = {k:v for k,v in tree.iteritems() if type(k) is str}
@@ -113,8 +108,8 @@ def main():
     try:
         MyHandler.exports_tup = java_exports.read_flat()
         MyHandler.tree = java_exports.construct_annotated_tree(MyHandler.exports_tup)
-        server = HTTPServer(('', LOCAL_PORT), MyHandler)
-        print 'serving HTTP on port {port}...'.format(port=LOCAL_PORT)
+        server = HTTPServer(('', config.LOCAL_PORT), MyHandler)
+        print 'serving HTTP on port {port}...'.format(port=config.LOCAL_PORT)
         server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'

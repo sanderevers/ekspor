@@ -10,6 +10,7 @@ ADD default.conf /etc/nginx/conf.d/default.conf
 
 ADD d3.min.js /usr/share/nginx/html/d3.min.js
 ADD index.html /usr/share/nginx/html/index.html
+ADD backend-url-docker.js /usr/share/nginx/html/backend-url.js
 
 # docker run --rm -P --link ekspor_backend:backend --name ekspor_frontend quay.io/topicusonderwijs/ekspor-frontend
 # ENTRYPOINT /start.sh

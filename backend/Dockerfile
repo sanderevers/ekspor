@@ -11,6 +11,7 @@ ADD ssh_config /root/.ssh/config
 # Copy python files
 ADD java_exports.py /java_exports.py
 ADD webserver.py /webserver.py
+ADD config-docker.py /config.py
 
 # Expose ports.
 #   - 8888: HTTP
