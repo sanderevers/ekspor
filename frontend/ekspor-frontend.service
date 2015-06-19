@@ -11,7 +11,7 @@ ExecStartPre=-/bin/bash -c "/usr/bin/docker login \
     -e=\".\" -u=\"topicusonderwijs+fleet\" -p=\"$(etcdctl get /credentials/quay)\" quay.io && \
     /usr/bin/docker pull quay.io/topicusonderwijs/ekspor-frontend:latest"
 
-ExecStartPre=-/usr/bin/docker rm "ekspor-frontend-0"
+ExecStartPre=-/usr/bin/docker rm -f "ekspor-frontend-0"
 ExecStart=/usr/bin/docker run --name "ekspor-frontend-0" \
     -p 5700:80 \
     -m=\"100m\" \

@@ -29,21 +29,19 @@ class MyHandler(BaseHTTPRequestHandler):
             if to is None:
                 wholetree = MyHandler.tree
             else:
+                toclz,maxtosize = parse_smallfilter(tuple(to.split('.')))
                 filtered = {}
                 for k,v in MyHandler.exports_tup.iteritems():
-                    fv = set((clz for clz in v if clz.startswith(to)))
+                    fv = set((clz for clz in v if clz.startswith('.'.join(toclz))))
                     if fv:
                         filtered[k]=fv
                 wholetree = java_exports.construct_annotated_tree(filtered)
 
-#            try:
-            if len(clz)>0 and clz[-1].startswith("<"):
-                realclz = clz[:-1]
-                maxsize = int(clz[-1][1:])
-                realclz, subtree = java_exports.lookup(realclz, wholetree)
+
+            clz, maxsize = parse_smallfilter(clz)
+            clz, subtree = java_exports.lookup(clz, wholetree)
+            if maxsize:
                 subtree = java_exports.filter_smallsize(subtree,maxsize)
-            else:
-                realclz, subtree = java_exports.lookup(clz, wholetree)
 
             exports = java_exports.get_leaf_exports(subtree)
             exports_dummydict = {}
@@ -67,11 +65,11 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             if content_type=='application/json':
-                treemap = java_exports.to_treemap(subtree,realclz)
+                treemap = java_exports.to_treemap(subtree,clz)
                 treemap['exports_tree'] = java_exports.to_treemap(exports_tree)
                 self.wfile.write(json.dumps(treemap,indent=2))
             else:
-                self.wfile.write(MyHandler.tree_to_html(realclz,subtree))
+                self.wfile.write(MyHandler.tree_to_html(clz,subtree))
 #            except KeyError:
 #                self.send_error(404)
             print('  {:.0f} ms'.format((time.time()-starttime)*1000))
@@ -105,7 +103,13 @@ class MyHandler(BaseHTTPRequestHandler):
 
 
 
-
+def parse_smallfilter(clz):
+    if len(clz)>0 and clz[-1].startswith("<"):
+        realclz = clz[:-1]
+        maxsize = int(clz[-1][1:])
+        return realclz,maxsize
+    else:
+        return clz,None
 
 def main():
     try:

@@ -12,7 +12,7 @@ ExecStartPre=-/bin/bash -c "/usr/bin/docker login \
     -e=\".\" -u=\"topicusonderwijs+fleet\" -p=\"$(etcdctl get /credentials/quay)\" quay.io && \
     /usr/bin/docker pull quay.io/topicusonderwijs/ekspor-backend:latest"
 
-ExecStartPre=-/usr/bin/docker rm "ekspor-backend-0"
+ExecStartPre=-/usr/bin/docker rm -f "ekspor-backend-0"
 ExecStart=/bin/bash -c "/usr/bin/docker run --name \"ekspor-backend-0\" \
     -e GITHUB_OAUTH=\"$(etcdctl get /credentials/github_oauth)\" \
     -m=\"500m\" \

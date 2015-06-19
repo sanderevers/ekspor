@@ -8,6 +8,10 @@ body {
   position: relative;
 }
 
+h2 {
+    margin-top : 0px;
+}
+
 form {
   position: absolute;
   right: 10px;
@@ -97,7 +101,7 @@ function load(path, topath) {
         var b = d3.select(".backendlinks")
         b.append("a").text("html").attr("href",path_to_url_html(path));
         b.append("text").text(" | ");
-        b.append("a").text("json").attr("href",path_to_url_json(path));
+        b.append("a").text("json").attr("href",path_to_url_json(path, topath));
 
         p = d3.select(".right h2");
         p.call(makelinks, topath);
@@ -192,6 +196,7 @@ function position() {
 }
 
 function makelinks(p, path) {
+    p.append("text").text("# ");
     if (!path)
         return;
 
@@ -216,8 +221,8 @@ function path_to_url(path, topath) {
 function path_to_url_html(path) {
     return backend_url()+path+"?view=html";
 }
-function path_to_url_json(path) {
-    return backend_url()+path;
+function path_to_url_json(path, topath) {
+    return backend_url()+path+(topath ? "?to="+topath : "");
 }
 
 

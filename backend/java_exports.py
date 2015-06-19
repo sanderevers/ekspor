@@ -192,6 +192,9 @@ def aggregate_paths(tree):
     return atree
 '''
 
+# Find the unique subtree of t resulting from following path.
+# It might be that the path to where the subtree actually starts
+# to branch is in fact longer; this possibly longer path is returned.
 def lookup(path, t):
     if len(path)==0:
         return path,t
@@ -201,9 +204,6 @@ def lookup(path, t):
             pathend = path[len(k):]
             pathend,subtree = lookup(pathend, v)
             return k+pathend,subtree
-#    for i in range(1,len(path)+1):
-#        if path[:i] in br:
-#            return lookup(path[i:],br[path[:i]])
     raise KeyError()
 
 def get_leaf_exports(t):

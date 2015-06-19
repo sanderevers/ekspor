@@ -14,5 +14,6 @@ IMPORTS = \
     [ { 'path':'/Users/sandr/work/eduarte', 'url':'https://github.com/topicusonderwijs/eduarte/tree/master' }
     , { 'path':'/Users/sandr/work/digdag',  'url':'https://github.com/topicusonderwijs/digdag/tree/master'  }
     , { 'path':'/Users/sandr/work/iridium', 'url':'https://github.com/topicusonderwijs/iridium/tree/master' }
+    , { 'path':'/Users/sandr/work/heimdall', 'url':'https://github.com/topicusonderwijs/heimdall/tree/master' }
     ]
 SRC_REGEX = '.*/src/main/java/.*\.java$'

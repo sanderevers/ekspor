@@ -14,6 +14,7 @@ if [ ${GITHUB_SSH_KEY} ]; then
     git clone git@github.com:topicusonderwijs/eduarte.git --depth 1 || git -C eduarte pull
     git clone git@github.com:topicusonderwijs/digdag.git --depth 1 || git -C digdag pull
     git clone git@github.com:topicusonderwijs/iridium.git --depth 1 || git -C iridium pull
+    git clone git@github.com:topicusonderwijs/heimdall.git --depth 1 || git -C heimdall pull
 
     rm /root/.ssh/id_rsa
 
@@ -26,6 +27,7 @@ elif [ ${GITHUB_OAUTH} ]; then
     git clone https://${GITHUB_OAUTH}:@github.com/topicusonderwijs/eduarte.git --depth 1 || git -C eduarte pull
     git clone https://${GITHUB_OAUTH}:@github.com/topicusonderwijs/digdag.git --depth 1 || git -C digdag pull
     git clone https://${GITHUB_OAUTH}:@github.com/topicusonderwijs/iridium.git --depth 1 || git -C iridium pull
+    git clone https://${GITHUB_OAUTH}:@github.com/topicusonderwijs/heimdall.git --depth 1 || git -C heimdall pull
 
 else
 
